@@ -1,3 +1,6 @@
 [submodule "renova_web"]
 	path = renova_web
 	url = git@github.com:TebraBrate/renova_organizer_web.git
+[submodule "renova_backend"]
+	path = renova_backend
+	url = git@github.com:TebraBrate/renova_backend_js.git
