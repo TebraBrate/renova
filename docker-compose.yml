@@ -2,11 +2,6 @@ version: '3.9'
 services:
   db:
     image: postgres:14.1-alpine
-    healthcheck:
-      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
-      timeout: 45s
-      interval: 10s
-      retries: 10
     restart: always
     environment:
       - POSTGRES_PORT=5433
@@ -17,33 +12,39 @@ services:
       - ./db:/docker-entrypoint-initdb.d/
     ports:
       - "5433:5433"
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "postgres" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
 
   renova-backend:
-    container_name: renova-backend
-    depends_on:
-      - db
-    build:
-      context: ./renova_backend
-      dockerfile: Dockerfile
-    volumes:
-      - './renova_backend:/app'
-      - '/app/node_modules'
-    ports:
-      - "3001:3001"
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+   container_name: renova-backend
+   depends_on:
+     db:
+       condition: service_healthy
+   build:
+     context: ./renova_backend
+     dockerfile: Dockerfile
+   volumes:
+     - './renova_backend:/app'
+     - '/app/node_modules'
+   ports:
+     - "3001:3001"
+   environment:
+     - CHOKIDAR_USEPOLLING=true
 
   renova-frontend:
-    container_name: renova-frontend
-    depends_on:
-      - renova-backend
-    build:
-      context: ./renova_web
-      dockerfile: Dockerfile
-    volumes:
-      - './renova_web:/app'
-      - '/app/node_modules'
-    ports:
-      - "3000:3000"
-    environment:
-      - CHOKIDAR_USEPOLLING=true
+   container_name: renova-frontend
+   depends_on:
+     - renova-backend
+   build:
+     context: ./renova_web
+     dockerfile: Dockerfile
+   volumes:
+     - './renova_web:/app'
+     - '/app/node_modules'
+   ports:
+     - "3000:3000"
+   environment:
+     - CHOKIDAR_USEPOLLING=true
